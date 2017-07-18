@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Helcim Commerce for Magento 2
-Plugin URI: UPDATE ME
+Plugin URI: https://github.com/helcim/magento-2/
 Description: Helcim Commerce for Magento 2
 Version: 1.0.0
 Author: Helcim Inc.
