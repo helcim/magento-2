@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2017 Helcim Inc. All rights reserved.
+ */
+-->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Payment Method Facade configuration -->
+    <virtualType name="HelcimAPI" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="const">\Helcim\HelcimAPI\Model\Ui\ConfigProvider::CODE</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Magento\Payment\Block\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">HelcimAPIValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">HelcimAPICommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Logger, initialized with HelcimAPIConfig -->
+    <virtualType name="HelcimAPILogger" type="Magento\Payment\Model\Method\Logger">
+        <arguments>
+            <argument name="config" xsi:type="object">HelcimAPIConfig</argument>
+        </arguments>
+    </virtualType>
+    <type name="Helcim\HelcimAPI\Gateway\Http\Client\HcmClient">
+        <arguments>
+            <argument name="logger" xsi:type="object">HelcimAPILogger</argument>
+        </arguments>
+    </type>
+
+    <!-- Configuration reader -->
+    <virtualType name="HelcimAPIConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">\Helcim\HelcimAPI\Model\Ui\ConfigProvider::CODE</argument>
+        </arguments>
+    </virtualType>
+    <type name="\Helcim\HelcimAPI\Model\Ui\ConfigProvider">
+        <arguments>
+            <argument name="config" xsi:type="object">HelcimAPIConfig</argument>
+        </arguments>
+    </type>
+
+    <!-- Commands infrastructure -->
+    <virtualType name="HelcimAPICommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="authorize" xsi:type="string">HelcimAPIAuthorizeCommand</item>
+                <item name="capture" xsi:type="string">HelcimAPICaptureCommand</item>
+                <item name="void" xsi:type="string">HelcimAPIVoidCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Authorize command -->
+    <virtualType name="HelcimAPIAuthorizeCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">HelcimAPIAuthorizationRequest</argument>
+            <argument name="handler" xsi:type="object">HelcimAPIResponseHandlerComposite</argument>
+            <argument name="transferFactory" xsi:type="object">Helcim\HelcimAPI\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Helcim\HelcimAPI\Gateway\Http\Client\HcmClient</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Authorization Request -->
+    <virtualType name="HelcimAPIAuthorizationRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="transaction" xsi:type="string">Helcim\HelcimAPI\Gateway\Request\AuthorizationRequest</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Helcim\HelcimAPI\Gateway\Request\AuthorizationRequest">
+        <arguments>
+            <argument name="config" xsi:type="object">HelcimAPIConfig</argument>
+        </arguments>
+    </type>
+
+    <!-- Capture command -->
+    <virtualType name="HelcimAPICaptureCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Helcim\HelcimAPI\Gateway\Request\CaptureRequest</argument>
+            <argument name="handler" xsi:type="object">Helcim\HelcimAPI\Gateway\Response\TxnIdHandler</argument>
+            <argument name="transferFactory" xsi:type="object">Helcim\HelcimAPI\Gateway\Http\TransferFactory</argument>
+            <argument name="validator" xsi:type="object">Helcim\HelcimAPI\Gateway\Validator\ResponseCodeValidator</argument>
+            <argument name="client" xsi:type="object">Helcim\HelcimAPI\Gateway\Http\Client\HcmClient</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Capture Request -->
+    <type name="Helcim\HelcimAPI\Gateway\Request\CaptureRequest">
+        <arguments>
+            <argument name="config" xsi:type="object">HelcimAPIConfig</argument>
+        </arguments>
+    </type>
+
+    <!-- Void command -->
+    <virtualType name="HelcimAPIVoidCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Helcim\HelcimAPI\Gateway\Request\VoidRequest</argument>
+            <argument name="handler" xsi:type="object">Helcim\HelcimAPI\Gateway\Response\TxnIdHandler</argument>
+            <argument name="transferFactory" xsi:type="object">Helcim\HelcimAPI\Gateway\Http\TransferFactory</argument>
+            <argument name="validator" xsi:type="object">Helcim\HelcimAPI\Gateway\Validator\ResponseCodeValidator</argument>
+            <argument name="client" xsi:type="object">Helcim\HelcimAPI\Gateway\Http\Client\HcmClient</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Void Request -->
+    <type name="Helcim\HelcimAPI\Gateway\Request\VoidRequest">
+        <arguments>
+            <argument name="config" xsi:type="object">HelcimAPIConfig</argument>
+        </arguments>
+    </type>
+
+    <!-- Response handlers -->
+    <virtualType name="HelcimAPIResponseHandlerComposite" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="txnid" xsi:type="string">Helcim\HelcimAPI\Gateway\Response\TxnIdHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Value handlers infrastructure -->
+    <virtualType name="HelcimAPIValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">HelcimAPIConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="HelcimAPIConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">HelcimAPIConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Helcim\HelcimAPI\Block\Info">
+        <arguments>
+            <argument name="config" xsi:type="object">HelcimAPIConfig</argument>
+        </arguments>
+    </type>
+
+</config>
