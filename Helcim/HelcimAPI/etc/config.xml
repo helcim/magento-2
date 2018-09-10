@@ -14,6 +14,7 @@
                 <test>1</test>
                 <account_id></account_id>
                 <api_token backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+                <js_token></js_token>
                 <order_status>pending_payment</order_status>
                 <payment_action>authorize</payment_action>
                 <title>Credit Card (Helcim)</title>
