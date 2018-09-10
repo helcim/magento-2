@@ -43,6 +43,7 @@ class HcmClient implements ClientInterface
      */
     public function placeRequest(TransferInterface $transferObject)
     {
+
         //
         // REQUEST
         //
@@ -93,7 +94,7 @@ class HcmClient implements ClientInterface
           }
         }
         if(isset($errorMessage)){
-          $this->logger->debug('Transaction has been declined - '.$errorMessage);
+          $this->logger->debug(array('Transaction has been declined - '.$errorMessage));
           throw new \Magento\Payment\Gateway\Http\ClientException(__('Transaction has been declined - '.$errorMessage));
         }
         return $response;
@@ -137,6 +138,7 @@ class HcmClient implements ClientInterface
 
         // SET RESULT CODE
         $response['response'] = (string)$xml->response == '1' ? self::SUCCESS : self::FAILURE;
+        $response['responseMessage'] = (string)$xml->responseMessage;
 
         // CHECK AND SET TRANSACTION ID
         if(isset($xml->transaction->transactionId)){ $response['transactionId'] = (int)$xml->transaction->transactionId; }

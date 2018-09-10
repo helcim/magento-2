@@ -62,6 +62,9 @@ final class ConfigProvider implements ConfigProviderInterface
                     ],
                     'cvvImageUrl' => [
                         self::CODE => $this->getCvvImageUrl()
+                    ],
+                    'jsToken' => [
+                        self::CODE => $this->config->getValue('js_token')
                     ]
                 ]
             ]

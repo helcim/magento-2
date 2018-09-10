@@ -7,6 +7,7 @@ namespace Helcim\HelcimAPI\Gateway\Request;
 use Magento\Payment\Gateway\ConfigInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
+use function GuzzleHttp\json_encode;
 
 class AuthorizationRequest implements BuilderInterface
 {
@@ -32,6 +33,7 @@ class AuthorizationRequest implements BuilderInterface
      */
     public function build(array $buildSubject)
     {
+
         if (!isset($buildSubject['payment'])
             || !$buildSubject['payment'] instanceof PaymentDataObjectInterface
         ) {
@@ -113,24 +115,52 @@ class AuthorizationRequest implements BuilderInterface
         // DEFAULT
         $result = array();
 
+        
         if(is_object($payment)){
-            if($payment->getAdditionalInformation('cc_number') != ''){
-                $result['cardNumber'] = $payment->getAdditionalInformation('cc_number');
+
+            // CHECK FOR TOKENIZATION
+            if($this->config->getValue('js_token') != ''){
+
+                if($payment->getAdditionalInformation('cc_number') != ''){
+
+                    // GET DATA
+                    $tokenizationData = explode('-',$payment->getAdditionalInformation('cc_number'));
+
+                    $result['cardToken'] = @$tokenizationData[0];
+                    $result['cardF4L4'] = @$tokenizationData[1].@$tokenizationData[2];
+            
+                    if($payment->getAdditionalInformation('cc_exp_month') != '' and $payment->getAdditionalInformation('cc_exp_year') != ''){
+                        $month = str_pad($payment->getAdditionalInformation('cc_exp_month'),2,'0',STR_PAD_LEFT);
+                        $year = substr($payment->getAdditionalInformation('cc_exp_year'),-2);
+                        $result['cardExpiry'] = $month.$year;
+                    }
+
+                }
+
+            }else{
+
+                if($payment->getAdditionalInformation('cc_number') != ''){
+                    $result['cardNumber'] = $payment->getAdditionalInformation('cc_number');
+                }
+
+                if($payment->getAdditionalInformation('cc_exp_month') != '' and $payment->getAdditionalInformation('cc_exp_year') != ''){
+                    $month = str_pad($payment->getAdditionalInformation('cc_exp_month'),2,'0',STR_PAD_LEFT);
+                    $year = substr($payment->getAdditionalInformation('cc_exp_year'),-2);
+                    $result['cardExpiry'] = $month.$year;
+                }
+                if($payment->getAdditionalInformation('cc_cid') != ''){
+                    $result['cardCVV'] = $payment->getAdditionalInformation('cc_cid');
+                }
+
             }
-            if($payment->getAdditionalInformation('cc_exp_month') != '' and $payment->getAdditionalInformation('cc_exp_year') != ''){
-                $month = str_pad($payment->getAdditionalInformation('cc_exp_month'),2,'0',STR_PAD_LEFT);
-                $year = substr($payment->getAdditionalInformation('cc_exp_year'),-2);
-                $result['cardExpiry'] = $month.$year;
-            }
-            if($payment->getAdditionalInformation('cc_cid') != ''){
-                $result['cardCVV'] = $payment->getAdditionalInformation('cc_cid');
-            }
+
             if($payment->getData('shipping_amount') != ''){
                 $result['amountShipping'] = $payment->getData('shipping_amount');
             }
             $result['cardHolderName'] = '';
             $result['cardHolderAddress'] = '';
             $result['cardHolderPostalCode'] = '';
+
         }
 
         // RETURN
