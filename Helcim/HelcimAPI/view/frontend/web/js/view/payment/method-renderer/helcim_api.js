@@ -91,7 +91,7 @@ define(
                 jQuery.ajax({
                     async:false,
                     type:'GET',
-                    url:'https://secure.qa.myhelcim.com/js/version2.js',
+                    url:'https://secure.myhelcim.com/js/version2.js',
                     data:null,
                     success:function(result) {
                         
