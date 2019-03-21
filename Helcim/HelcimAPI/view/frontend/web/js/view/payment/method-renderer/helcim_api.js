@@ -11,7 +11,7 @@ define(
         'Magento_Payment/js/model/credit-card-validation/credit-card-number-validator',
         'mage/translate'
     ],
-    function (Component,$, creditCardData, cardNumberValidator, $t) {
+    function (Component, $, creditCardData, cardNumberValidator, $t) {
 
         return Component.extend({
             defaults: {
@@ -49,15 +49,15 @@ define(
                 this._super();
 
                 //Set credit card number to credit card data object
-                this.creditCardNumber.subscribe(function(value) {
+                this.creditCardNumber.subscribe(function (value) {
                     var result;
                     self.selectedCardType(null);
- 
+
                     if (value == '' || value == null) {
                         return false;
                     }
                     result = cardNumberValidator(value);
- 
+
                     if (!result.isPotentiallyValid && !result.isValid) {
                         return false;
                     }
@@ -65,48 +65,48 @@ define(
                         self.selectedCardType(result.card.type);
                         creditCardData.creditCard = result.card;
                     }
- 
+
                     if (result.isValid) {
                         creditCardData.creditCardNumber = value;
                         self.creditCardType(result.card.type);
                     }
                 });
- 
+
                 //Set expiration year to credit card data object
-                this.creditCardExpYear.subscribe(function(value) {
+                this.creditCardExpYear.subscribe(function (value) {
                     creditCardData.expirationYear = value;
                 });
- 
+
                 //Set expiration month to credit card data object
-                this.creditCardExpMonth.subscribe(function(value) {
+                this.creditCardExpMonth.subscribe(function (value) {
                     creditCardData.expirationMonth = value;
                 });
- 
+
                 //Set cvv code to credit card data object
-                this.creditCardVerificationNumber.subscribe(function(value) {
+                this.creditCardVerificationNumber.subscribe(function (value) {
                     creditCardData.cvvCode = value;
                 });
 
                 // INCLUDE HELCIM JS
                 jQuery.ajax({
-                    async:false,
-                    type:'GET',
-                    url:'https://secure.myhelcim.com/js/version2.js',
-                    data:null,
-                    success:function(result) {
-                        
+                    async: false,
+                    type: 'GET',
+                    url: 'https://secure.myhelcim.com/js/version2.js',
+                    data: null,
+                    success: function (result) {
+
                     },
-                    dataType:'script',
-                    error: function(xhr, textStatus, errorThrown) {
+                    dataType: 'script',
+                    error: function (xhr, textStatus, errorThrown) {
                         // Look at the `textStatus` and/or `errorThrown` properties.
-                        
-                        
+
+
                     }
                 });
 
             },
 
-            getCode: function() {
+            getCode: function () {
 
                 return 'helcim_api';
             },
@@ -114,41 +114,41 @@ define(
             isActive: function () {
                 return true;
             },
- 
-            getCcAvailableTypes: function() {
+
+            getCcAvailableTypes: function () {
                 return window.checkoutConfig.payment.ccform.availableTypes['helcim_api'];
             },
- 
-            getCcMonths: function() {
+
+            getCcMonths: function () {
                 return window.checkoutConfig.payment.ccform.months['helcim_api'];
             },
- 
-            getCcYears: function() {
+
+            getCcYears: function () {
                 return window.checkoutConfig.payment.ccform.years['helcim_api'];
             },
- 
-            hasVerification: function() {
+
+            hasVerification: function () {
                 return window.checkoutConfig.payment.ccform.hasVerification['helcim_api'];
             },
- 
-            getCcAvailableTypesValues: function() {
-                return _.map(this.getCcAvailableTypes(), function(value, key) {
+
+            getCcAvailableTypesValues: function () {
+                return _.map(this.getCcAvailableTypes(), function (value, key) {
                     return {
                         'value': key,
                         'type': value
                     }
                 });
             },
-            getCcMonthsValues: function() {
-                return _.map(this.getCcMonths(), function(value, key) {
+            getCcMonthsValues: function () {
+                return _.map(this.getCcMonths(), function (value, key) {
                     return {
                         'value': key,
                         'month': value
                     }
                 });
             },
-            getCcYearsValues: function() {
-                return _.map(this.getCcYears(), function(value, key) {
+            getCcYearsValues: function () {
+                return _.map(this.getCcYears(), function (value, key) {
                     return {
                         'value': key,
                         'year': value
@@ -156,20 +156,20 @@ define(
                 });
             },
 
-            placeOrder: function (){
+            placeOrder: function () {
 
-                if(document.getElementById("helcimForm2") != null){ document.getElementById("helcimForm2").remove(); }
+                if (document.getElementById("helcimForm2") != null) { $("#helcimForm2").remove(); }
 
                 // GET JS TOKEN
                 var jsToken = window.checkoutConfig.payment.ccform.jsToken.helcim_api;
 
                 // CHECK FOR RESULT
-                if((typeof window.helcimResult !== 'undefined' && window.helcimResult != null) || jsToken == null){
+                if ((typeof window.helcimResult !== 'undefined' && window.helcimResult != null) || jsToken == null) {
 
                     // CONTINUE LOGIC
                     self._super();
 
-                }else{
+                } else {
 
                     // GET VALIDATION
                     var validation = true;
@@ -178,7 +178,7 @@ define(
                     var cardNumber = document.getElementsByName('payment[cc_number]')[0].value;
 
                     // VALIDATION
-                    if(validation && cardNumber.length > 0){
+                    if (validation && cardNumber.length > 0) {
 
                         // GET DATA
                         var expiryMonth = document.getElementsByName('payment[cc_exp_month]')[0].value;
@@ -186,32 +186,10 @@ define(
                         var cvv = document.getElementsByName('payment[cc_cid]')[0].value;
                         var customerId = window.checkoutConfig.customerData.id;
 
+                        if (expiryMonth.length == 1) { expiryMonth = '0' + expiryMonth; }
+
                         // CREATE HIDDEN FORM FOR CARD TOKENIZATION
-                        document.querySelector('footer').innerHTML += `
-                        
-                        <form style="display:none;" name="helcimForm2" id="helcimForm2" method="POST">
-                        <!--FORM-->
-                            <!--RESULTS-->
-                            <div style="display:none;" id="helcimResults"></div>
-                        
-                            <!--SETTINGS-->
-                            <input type="hidden" id="token" value="${jsToken}">
-                            <input type="hidden" id="language" value="en">
-                            <input type="hidden" id="dontSubmit" value="1">
-                            <input type="hidden" id="test" value="1">
-                            <input type="hidden" id="xml" value="1">
-                        
-                            <!--CARD-INFORMATION-->
-                            <input type="hidden" id="cardNumber" value="${cardNumber}"><br/>
-                            <input type="hidden" id="cardExpiryMonth" value="${expiryMonth.padStart(2, '0')}"> <input type="hidden" id="cardExpiryYear" value="${expiryYear.slice(-2)}"><br/>
-                            <input type="hidden" id="cardCVV" value="${cvv}"><br/>
-                            <input type="hidden" id="amount" value="0"><br/>
-                            <input type="hidden" id="customerCode" value="${customerId}"><br/>
-                        
-                        </form>
-                        
-                    
-                        `;
+                        document.querySelector('footer').innerHTML += '<form style="display:none;" name="helcimForm2" id="helcimForm2" method="POST"><div style="display:none;" id="helcimResults"></div><input type="hidden" id="token" value="' + jsToken + '"> <input type="hidden" id="language" value="en"> <input type="hidden" id="dontSubmit" value="1"> <input type="hidden" id="test" value="1"> <input type="hidden" id="xml" value="1"><input type="hidden" id="cardNumber" value="' + cardNumber + '"><br/> <input type="hidden" id="cardExpiryMonth" value="' + expiryMonth + '"> <input type="hidden" id="cardExpiryYear" value="' + expiryYear.slice(-2) + '"><br/> <input type="hidden" id="cardCVV" value="' + cvv + '"><br/> <input type="hidden" id="amount" value="0"><br/> <input type="hidden" id="customerCode" value="' + customerId + '"><br/> </form>';
 
                         // CLEAR CREDIT CARD DATA
                         document.getElementsByName('payment[cc_number]')[0].value = '';
@@ -221,33 +199,43 @@ define(
                         $('#helcim_api_cc_number').change();
                         $('#helcim_api_cc_exp_month').change();
                         $('#helcim_api_cc_exp_year').change();
-                        $('#helcim_api_cc_cid').change(); 
+                        $('#helcim_api_cc_cid').change();
                         var element = document.getElementsByName('payment[cc_exp_month]')[0];
-                        var event = new Event('change');
+                        var event = document.createEvent('Event');
+                        event.initEvent('change', true, true);
                         element.dispatchEvent(event);
                         var element = document.getElementsByName('payment[cc_exp_year]')[0];
-                        var event = new Event('change');
+                        var event = document.createEvent('Event');
+                        event.initEvent('change', true, true);
                         element.dispatchEvent(event);
 
                         // VERIFY CARD
-                        helcimProcess().then(function(result) {
+                        helcimProcess().then(function (result) {
 
                             // CHECK RESULT
-                            if(typeof result !== 'undefined' || result != ''){
+                            if (typeof result !== 'undefined' || result != '') {
+
+                                // GET RESPONSE
+                                var foundResult = $('input#response').val();
+                                var foundResultMessage = $('input#responseMessage').val();
+
+                                // THROW IF ERRORS
+                                if (foundResult != 1) { throw foundResultMessage }
 
                                 // GET DATA
-                                const regexToken = /(?<=id="cardToken" value=")[^\"]*/gm;
-                                const regexMaskedNumber = /(?<=id="cardNumber" value=")([\d"]*)[^\d]*([\d]*)/gm;
-                                var foundToken = result.match(regexToken);
-                                var foundMaskedNumber  = regexMaskedNumber.exec(result);
-                                
+                                let foundToken = $('input#cardToken').val();
+                                let foundMaskedNumber = $('input#cardNumber').val().trim();
+
+                                let first4 = foundMaskedNumber.slice(0, 4);
+                                let last4 = foundMaskedNumber.slice(foundMaskedNumber.length - 4);
+
                                 // CHECK FOUND DATA
-                                if(foundToken[0] != null && foundToken[0] != '' 
-                                    && foundMaskedNumber[1] != null && foundMaskedNumber[1] != ''
-                                    && foundMaskedNumber[2] != null && foundMaskedNumber[2] != '' ){
-                                    
+                                if (foundToken != null && foundToken != ''
+                                    && first4 != null && first4 != ''
+                                    && last4 != null && last4 != '') {
+
                                     // BUILD DATA STRING
-                                    var data = foundToken[0]+'-'+foundMaskedNumber[1]+'-'+foundMaskedNumber[2];
+                                    var data = foundToken + '-' + first4 + '-' + last4;
 
                                     // ASSIGN TOKEN TO CREDIT CARD FIELD
                                     document.getElementsByName('payment[cc_number]')[0].value = data;
@@ -261,24 +249,24 @@ define(
                                 // ASSIGN WINDOW RESULT
                                 window.helcimResult = result;
                             }
-            
+
                             self.placeOrder();
-                            
-                        }).catch(function(error){
+
+                        }).catch(function (error) {
 
                             // ALERT
-                            alert('Tokenization error. '+error);
-                        
+                            alert('Tokenization error. ' + error);
+
                         });
 
 
                     }
 
                 }
-  
+
             },
 
-            validate: function() {
+            validate: function () {
 
                 // CLEAR RESULT
                 window.helcimResult = null;
@@ -289,5 +277,3 @@ define(
         });
     }
 );
-
-
