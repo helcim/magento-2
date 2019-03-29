@@ -162,6 +162,7 @@ define(
 
                 // GET JS TOKEN
                 var jsToken = window.checkoutConfig.payment.ccform.jsToken.helcim_api;
+                var testMode = window.checkoutConfig.payment.ccform.testMode.helcim_api;
 
                 // CHECK FOR RESULT
                 if ((typeof window.helcimResult !== 'undefined' && window.helcimResult != null) || jsToken == null) {
@@ -189,7 +190,7 @@ define(
                         if (expiryMonth.length == 1) { expiryMonth = '0' + expiryMonth; }
 
                         // CREATE HIDDEN FORM FOR CARD TOKENIZATION
-                        document.querySelector('footer').innerHTML += '<form style="display:none;" name="helcimForm2" id="helcimForm2" method="POST"><div style="display:none;" id="helcimResults"></div><input type="hidden" id="token" value="' + jsToken + '"> <input type="hidden" id="language" value="en"> <input type="hidden" id="dontSubmit" value="1"> <input type="hidden" id="test" value="1"> <input type="hidden" id="xml" value="1"><input type="hidden" id="cardNumber" value="' + cardNumber + '"><br/> <input type="hidden" id="cardExpiryMonth" value="' + expiryMonth + '"> <input type="hidden" id="cardExpiryYear" value="' + expiryYear.slice(-2) + '"><br/> <input type="hidden" id="cardCVV" value="' + cvv + '"><br/> <input type="hidden" id="amount" value="0"><br/> <input type="hidden" id="customerCode" value="' + customerId + '"><br/> </form>';
+                        document.querySelector('footer').innerHTML += '<form style="display:none;" name="helcimForm2" id="helcimForm2" method="POST"><div style="display:none;" id="helcimResults"></div><input type="hidden" id="token" value="' + jsToken + '"> <input type="hidden" id="language" value="en"> <input type="hidden" id="dontSubmit" value="1"> <input type="hidden" id="test" value="'+testMode+'"> <input type="hidden" id="xml" value="1"><input type="hidden" id="cardNumber" value="' + cardNumber + '"><br/> <input type="hidden" id="cardExpiryMonth" value="' + expiryMonth + '"> <input type="hidden" id="cardExpiryYear" value="' + expiryYear.slice(-2) + '"><br/> <input type="hidden" id="cardCVV" value="' + cvv + '"><br/> <input type="hidden" id="amount" value="0"><br/> <input type="hidden" id="customerCode" value="' + customerId + '"><br/> </form>';
 
                         // CLEAR CREDIT CARD DATA
                         document.getElementsByName('payment[cc_number]')[0].value = '';
