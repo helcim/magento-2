@@ -10,6 +10,8 @@ Requires Magento 2.x installation: http://devdocs.magento.com/
 
 In order to utilize the Helcim Commerce API, you must enter your Helcim Commerce account ID as well as an API token in the Magento plugin setup. For instructions on generating an API token with the correct permissions, please visit: https://www.helcim.com/support/article/627-helcim-commerce-api-enabling-api-access/
 
+When using this plugin with a Helcim.js token, set the Helcim.js configuration in Helcim Hub to "Card Verify" mode. When using Helcim.js, this plugin first runs a verification transaction to tokenize the card, then initiates a preauthorization with the tokenized card.
+
 ## Magento Plugin Installation
 
 - Copy and paste the Helcim folder in the <your Magento2 install dir>/app/code Directory.

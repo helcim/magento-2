@@ -9,9 +9,10 @@ define(
         'jquery',
         'Magento_Payment/js/model/credit-card-validation/credit-card-data',
         'Magento_Payment/js/model/credit-card-validation/credit-card-number-validator',
-        'mage/translate'
+        'mage/translate',
+	'Magento_Checkout/js/model/quote'
     ],
-    function (Component, $, creditCardData, cardNumberValidator, $t) {
+    function (Component, $, creditCardData, cardNumberValidator, $t, quote) {
 
         return Component.extend({
             defaults: {
@@ -187,10 +188,20 @@ define(
                         var cvv = document.getElementsByName('payment[cc_cid]')[0].value;
                         var customerId = window.checkoutConfig.customerData.id;
 
+			var amount = quote.totals().base_grand_total;
+
+			var billing = quote.billingAddress();
+			
+			var cardHolderName = billing.firstname + " " + billing.lastname			 
+			var cardHolderAddress = ""
+			for (street_index in billing.street) cardHolderAddress += billing.street[street_index] + "\n"
+			cardHolderAddress += billing.city + ", " + billing.region
+			var cardHolderPostalCode = billing.postcode
+
                         if (expiryMonth.length == 1) { expiryMonth = '0' + expiryMonth; }
 
                         // CREATE HIDDEN FORM FOR CARD TOKENIZATION
-                        document.querySelector('footer').innerHTML += '<form style="display:none;" name="helcimForm2" id="helcimForm2" method="POST"><div style="display:none;" id="helcimResults"></div><input type="hidden" id="token" value="' + jsToken + '"> <input type="hidden" id="language" value="en"> <input type="hidden" id="dontSubmit" value="1"> <input type="hidden" id="test" value="'+testMode+'"> <input type="hidden" id="xml" value="1"><input type="hidden" id="cardNumber" value="' + cardNumber + '"><br/> <input type="hidden" id="cardExpiryMonth" value="' + expiryMonth + '"> <input type="hidden" id="cardExpiryYear" value="' + expiryYear.slice(-2) + '"><br/> <input type="hidden" id="cardCVV" value="' + cvv + '"><br/> <input type="hidden" id="amount" value="0"><br/> <input type="hidden" id="customerCode" value="' + customerId + '"><br/> </form>';
+                        document.querySelector('footer').innerHTML += '<form style="display:none;" name="helcimForm2" id="helcimForm2" method="POST"><div style="display:none;" id="helcimResults"></div><input type="hidden" id="token" value="' + jsToken + '"> <input type="hidden" id="language" value="en"> <input type="hidden" id="dontSubmit" value="1"> <input type="hidden" id="test" value="'+testMode+'"> <input type="hidden" id="xml" value="1"><input type="hidden" id="cardNumber" value="' + cardNumber + '"><br/> <input type="hidden" id="cardExpiryMonth" value="' + expiryMonth + '"> <input type="hidden" id="cardExpiryYear" value="' + expiryYear.slice(-2) + '"><br/> <input type="hidden" id="cardCVV" value="' + cvv + '"><br/> <input type="hidden" id="amount" value="' + amount + '"><br/> <input type="hidden" id="customerCode" value="' + customerId + '"><br/> <input type="hidden" id="cardHolderName" value="' + cardHolderName + '"><br/> <input type="hidden" id="cardHolderPostalCode" value="' + cardHolderPostalCode + '"><br/><input type="hidden" id="cardHolderAddress" value="' + cardHolderAddress+ '"><br/></form>';
 
                         // CLEAR CREDIT CARD DATA
                         document.getElementsByName('payment[cc_number]')[0].value = '';
